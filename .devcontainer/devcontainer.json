@@ -1,0 +1,16 @@
+{
+  "name": "Codespace Desktop",
+  "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
+  "features": {},
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "forwardPorts": [6080],
+  "portsAttributes": {
+    "6080": {
+      "label": "noVNC",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "runArgs": [
+    "--cap-add=NET_ADMIN"
+  ]
+}
