@@ -3,7 +3,8 @@
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {},
   "postCreateCommand": "",
-  "postStartCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "",
+  "postAttachCommand": "bash .devcontainer/post-create.sh",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {
