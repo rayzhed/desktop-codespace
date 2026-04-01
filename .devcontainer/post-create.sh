@@ -15,9 +15,9 @@ sudo rm -f /etc/apt/sources.list.d/*yarn*
 sudo apt-get update -yq
 sudo apt-get upgrade -yq
 
-# Desktop + VNC
+# Desktop + VNC (added tigervnc-common)
 sudo apt-get install -yq --no-install-recommends \
-    xfce4 xfce4-goodies tigervnc-standalone-server dbus-x11 \
+    xfce4 xfce4-goodies tigervnc-standalone-server tigervnc-common dbus-x11 \
     novnc websockify falkon xterm git
 
 # Pentest tools
@@ -25,9 +25,6 @@ sudo apt-get install -yq --no-install-recommends \
     nmap sqlmap nikto gobuster wfuzz hydra john hashcat \
     netcat-openbsd tcpdump wireshark-common dirb dnsutils whois \
     openvpn ssh curl wget python3 python3-pip
-
-# Optional: SecLists (avoid 3GB)
-# git clone https://github.com/danielmiessler/SecLists.git ~/SecLists
 
 # VNC config
 mkdir -p ~/.vnc
