@@ -1,13 +1,13 @@
 #!/bin/bash
 set -e
 
-# Prevent ALL interactive prompts (keyboard, timezone, wireshark, etc.)
+# Prevent ALL interactive prompts
 export DEBIAN_FRONTEND=noninteractive
 
 # Preseed Wireshark to avoid the yes/no prompt
 echo "wireshark-common wireshark-common/install-setuid boolean false" | sudo debconf-set-selections
 
-# Fix Yarn repo (Codespaces sometimes leaves stale entries)
+# Fix Yarn repo
 sudo rm -f /etc/apt/sources.list.d/yarn.list
 sudo rm -f /etc/apt/sources.list.d/*yarn*
 
@@ -15,7 +15,7 @@ sudo rm -f /etc/apt/sources.list.d/*yarn*
 sudo apt-get update -yq
 sudo apt-get upgrade -yq
 
-# Desktop + VNC (TigerVNC on Ubuntu 24.04 does NOT include vncpasswd)
+# Desktop + VNC
 sudo apt-get install -yq --no-install-recommends \
     xfce4 xfce4-goodies tigervnc-standalone-server tigervnc-common dbus-x11 \
     novnc websockify falkon xterm git
@@ -35,14 +35,16 @@ startxfce4 &
 EOF
 chmod +x ~/.vnc/xstartup
 
-# Generate a secure random VNC password
+# Generate secure random VNC password using tigervncpasswd -f
 if [ ! -f ~/.vnc/passwd ]; then
+    mkdir -p ~/.vnc
+
+    # Generate random password
     VNC_PASS=$(openssl rand -base64 12)
     echo "$VNC_PASS" > ~/.vnc/vnc-password.txt
 
-    # Create TigerVNC password file using a temporary server
-    echo "$VNC_PASS" | vncserver -SecurityTypes VncAuth -PasswordFile ~/.vnc/passwd -geometry 1x1 :9
-    vncserver -kill :9
+    # Generate encrypted password using TigerVNC's filter mode
+    echo "$VNC_PASS" | tigervncpasswd -f > ~/.vnc/passwd
 
     chmod 600 ~/.vnc/passwd
 
