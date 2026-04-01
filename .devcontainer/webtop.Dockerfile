@@ -9,6 +9,6 @@ RUN apt-get update && apt-get install -y \
     xfce4-whiskermenu-plugin xfce4-goodies xfce4-genmon-plugin \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
+COPY background-install.sh /config/
 COPY xfce-theme-setup.sh /config/
 COPY firefox-extensions.sh /config/
-COPY background-install.sh /config/

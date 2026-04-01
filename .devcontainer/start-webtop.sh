@@ -3,13 +3,22 @@
 echo "=============================================="
 echo "        Cyber Desktop Initial Setup"
 echo "=============================================="
+echo "1) Use recommended defaults (fast)"
+echo "2) Customize settings"
+read -p "Choose an option [1/2]: " CHOICE
 
-read -p "Enter your timezone (e.g. Europe/Paris): " USER_TZ
-read -p "Enter your keyboard layout (e.g. fr, us, de): " USER_KB
-read -p "Enter your preferred screen resolution (e.g. 1920x1080): " USER_RES
+if [ "$CHOICE" = "2" ]; then
+    read -p "Enter your timezone (e.g. Europe/Paris): " USER_TZ
+    read -p "Enter your keyboard layout (e.g. fr, us, de): " USER_KB
+    read -p "Enter your preferred screen resolution (e.g. 1920x1080): " USER_RES
+else
+    USER_TZ="Europe/Paris"
+    USER_KB="fr"
+    USER_RES="1920x1080"
+fi
 
 echo ""
-echo "Applying your configuration..."
+echo "Using configuration:"
 echo "Timezone: $USER_TZ"
 echo "Keyboard: $USER_KB"
 echo "Resolution: $USER_RES"
