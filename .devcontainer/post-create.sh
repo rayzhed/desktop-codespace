@@ -1,23 +1,30 @@
 #!/bin/bash
 set -e
 
+# Prevent ALL interactive prompts (keyboard, timezone, wireshark, etc.)
+export DEBIAN_FRONTEND=noninteractive
+
 # Fix Yarn repo
 sudo rm -f /etc/apt/sources.list.d/yarn.list
 sudo rm -f /etc/apt/sources.list.d/*yarn*
 
-sudo apt update -y
-sudo apt upgrade -y
+# Update system
+sudo apt-get update -yq
+sudo apt-get upgrade -yq
 
 # Desktop + VNC
-sudo apt install -y xfce4 xfce4-goodies tigervnc-standalone-server dbus-x11 \
-                    novnc websockify falkon xterm git
+sudo apt-get install -yq --no-install-recommends \
+    xfce4 xfce4-goodies tigervnc-standalone-server dbus-x11 \
+    novnc websockify falkon xterm git
 
 # Pentest tools
-sudo apt install -y nmap sqlmap nikto gobuster wfuzz hydra john hashcat \
-                    netcat-openbsd tcpdump wireshark dirb dnsutils whois \
-                    openvpn ssh curl wget python3 python3-pip
+sudo apt-get install -yq --no-install-recommends \
+    nmap sqlmap nikto gobuster wfuzz hydra john hashcat \
+    netcat-openbsd tcpdump wireshark-common dirb dnsutils whois \
+    openvpn ssh curl wget python3 python3-pip
 
-# Optional: SecLists (commenté pour éviter 3GB)
+
+# Optional: SecLists (avoid 3GB)
 # git clone https://github.com/danielmiessler/SecLists.git ~/SecLists
 
 # VNC config
@@ -38,3 +45,7 @@ fi
 # Clean old sessions
 vncserver -kill :1 2>/dev/null || true
 rm -rf /tmp/.X*-lock /tmp/.X11-unix/X* || true
+
+# Reduce Codespace size
+sudo apt-get clean
+sudo rm -rf /var/lib/apt/lists/*
