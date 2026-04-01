@@ -2,8 +2,8 @@
   "name": "Codespace Desktop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
   "features": {},
-  "postCreateCommand": "bash .devcontainer/post-create.sh",
-  "postStartCommand": "bash -lc 'tail -f ~/post-create.log || true'",
+  "postCreateCommand": "",
+  "postStartCommand": "bash .devcontainer/post-create.sh",
   "forwardPorts": [6080],
   "portsAttributes": {
     "6080": {
