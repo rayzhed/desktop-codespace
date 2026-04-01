@@ -1,5 +1,5 @@
 {
-  "name": "Codespace Desktop",
+  "name": "Cyber Offensive Desktop",
   "image": "mcr.microsoft.com/devcontainers/base:ubuntu",
 
   "features": {
@@ -12,7 +12,7 @@
   "forwardPorts": [3000],
   "portsAttributes": {
     "3000": {
-      "label": "Webtop Desktop",
+      "label": "Cyber Desktop",
       "onAutoForward": "openBrowser"
     }
   },
