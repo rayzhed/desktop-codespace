@@ -35,7 +35,7 @@ startxfce4 &
 EOF
 chmod +x ~/.vnc/xstartup
 
-# Generate secure random VNC password using tigervncpasswd -f
+# Generate secure random VNC password (TigerVNC has no password tool in Ubuntu 24.04)
 if [ ! -f ~/.vnc/passwd ]; then
     mkdir -p ~/.vnc
 
@@ -43,8 +43,17 @@ if [ ! -f ~/.vnc/passwd ]; then
     VNC_PASS=$(openssl rand -base64 12)
     echo "$VNC_PASS" > ~/.vnc/vnc-password.txt
 
-    # Generate encrypted password using TigerVNC's filter mode
-    echo "$VNC_PASS" | tigervncpasswd -f > ~/.vnc/passwd
+    # Generate TigerVNC-compatible DES-encrypted password
+    python3 - <<EOF
+import os
+import crypt
+
+password = "$VNC_PASS"
+encrypted = crypt.crypt(password, "vt")  # TigerVNC uses DES crypt with 2-char salt
+
+with open(os.path.expanduser("~/.vnc/passwd"), "w") as f:
+    f.write(encrypted)
+EOF
 
     chmod 600 ~/.vnc/passwd
 
