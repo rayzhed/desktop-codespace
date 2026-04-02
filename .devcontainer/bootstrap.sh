@@ -4,45 +4,43 @@
 
 IMAGE_NAME="webtop-cyber"
 
-GHCR_IMAGE="${GHCR_IMAGE:-}"
+# Auto-detect from Codespaces environment
+
+GITHUB_USER="${GITHUB_REPOSITORY_OWNER:-$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f1)}"
+
+REPO_NAME="$(echo "$GITHUB_REPOSITORY" | cut -d'/' -f2)"
+
+GHCR_IMAGE="ghcr.io/${GITHUB_USER}/${REPO_NAME}/webtop-cyber:latest"
 
 echo ""
 
 echo "=============================================="
 
-echo "     Cyber Desktop - Building Image"
+echo "     Cyber Desktop - Setting Up"
+
+echo "=============================================="
+
+echo "  Pulling: $GHCR_IMAGE"
 
 echo "=============================================="
 
 echo ""
 
-# Strategy 1: Pull prebuilt image from GHCR
+if docker pull "$GHCR_IMAGE" 2>&1; then
 
-if [ -n "$GHCR_IMAGE" ]; then
-
-    echo "[*] Pulling prebuilt image: $GHCR_IMAGE"
-
-    if docker pull "$GHCR_IMAGE" 2>&1; then
-
-        docker tag "$GHCR_IMAGE" "$IMAGE_NAME"
-
-        echo "[+] Image pulled successfully. Startup will be fast."
-
-        exit 0
-
-    fi
-
-    echo "[!] Pull failed, building locally..."
+    docker tag "$GHCR_IMAGE" "$IMAGE_NAME"
 
     echo ""
 
+    echo "[+] Image ready."
+
+    exit 0
+
 fi
 
-# Strategy 2: Build locally
+echo ""
 
-echo "[*] Building image locally. This takes ~8-12 min on first run."
-
-echo "[*] Progress will appear below..."
+echo "[!] Pull failed, building locally (~10min)..."
 
 echo ""
 
@@ -56,30 +54,12 @@ docker build \
 
     .devcontainer/ 2>&1
 
-BUILD_EXIT=$?
+if [ $? -ne 0 ]; then
 
-if [ $BUILD_EXIT -ne 0 ]; then
-
-    echo ""
-
-    echo "[ERROR] Docker build failed with exit code $BUILD_EXIT"
-
-    echo "[ERROR] Check the logs above for details."
-
-    echo "[ERROR] Common fixes:"
-
-    echo "  - A Go tool may have changed its import path"
-
-    echo "  - A Python package may have a broken release"
-
-    echo "  - Network timeout (just retry: rebuild the codespace)"
+    echo "[ERROR] Build failed."
 
     exit 1
 
 fi
 
-echo ""
-
-echo "[+] Image built successfully!"
-
-echo "[+] Image size: $(docker image inspect "$IMAGE_NAME" --format='{{.Size}}' | numfmt --to=iec 2>/dev/null || echo 'unknown')"
+echo "[+] Build complete."
