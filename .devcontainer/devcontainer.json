@@ -2,8 +2,8 @@
   "name": "Cyber Offensive Desktop",
 
   "build": {
-    "dockerfile": "webtop.Dockerfile",
-    "context": ".devcontainer"
+    "dockerfile": "Dockerfile",
+    "context": "."
   },
 
   "features": {
