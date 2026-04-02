@@ -1,21 +1,85 @@
-FROM lscr.io/linuxserver/webtop:ubuntu-xfce
+#!/bin/bash
 
-# Utiliser les mods Webtop pour installer les paquets de manière persistante
-ENV DOCKER_MODS=linuxserver/mods:universal-package-install
-ENV INSTALL_PACKAGES=nmap|sqlmap|nikto|gobuster|wfuzz|hydra|john|hashcat|netcat-openbsd|tcpdump|wireshark-common|dirb|dnsutils|whois|openvpn|curl|wget|git|python3|python3-pip|python3-dev|gdb|binwalk|binutils|ltrace|strace|radare2|seclists|zaproxy|firefox
+# bootstrap.sh - Runs ONCE at codespace creation (postCreateCommand)
 
-RUN apt-get update && apt-get install -y \
-    xfce4-whiskermenu-plugin \
-    xfce4-goodies \
-    xfce4-genmon-plugin \
-    && apt-get clean && rm -rf /var/lib/apt/lists/*
+IMAGE_NAME="webtop-cyber"
 
-# Installer les outils supplémentaires
-RUN gunzip -c /usr/share/wordlists/rockyou.txt.gz > /usr/share/wordlists/rockyou.txt && \
-    wget -q https://portswigger.net/burp/releases/download?product=community&version=2023.12.1&type=Linux -O /tmp/burp.sh && \
-    chmod +x /tmp/burp.sh && /tmp/burp.sh -q && \
-    pip3 install volatility3 && \
-    mkdir -p /opt/privesc && cd /opt/privesc && \
-    wget -q https://github.com/carlospolop/PEASS-ng/releases/latest/download/linpeas.sh && \
-    wget -q https://github.com/carlospolop/PEASS-ng/releases/latest/download/winPEASx64.exe && \
-    wget -q https://github.com/DominicBreuker/pspy/releases/latest/download/pspy64
+GHCR_IMAGE="${GHCR_IMAGE:-}"
+
+echo ""
+
+echo "=============================================="
+
+echo "     Cyber Desktop - Building Image"
+
+echo "=============================================="
+
+echo ""
+
+# Strategy 1: Pull prebuilt image from GHCR
+
+if [ -n "$GHCR_IMAGE" ]; then
+
+    echo "[*] Pulling prebuilt image: $GHCR_IMAGE"
+
+    if docker pull "$GHCR_IMAGE" 2>&1; then
+
+        docker tag "$GHCR_IMAGE" "$IMAGE_NAME"
+
+        echo "[+] Image pulled successfully. Startup will be fast."
+
+        exit 0
+
+    fi
+
+    echo "[!] Pull failed, building locally..."
+
+    echo ""
+
+fi
+
+# Strategy 2: Build locally
+
+echo "[*] Building image locally. This takes ~8-12 min on first run."
+
+echo "[*] Progress will appear below..."
+
+echo ""
+
+docker build \
+
+    --progress=plain \
+
+    -t "$IMAGE_NAME" \
+
+    -f .devcontainer/webtop.Dockerfile \
+
+    .devcontainer/ 2>&1
+
+BUILD_EXIT=$?
+
+if [ $BUILD_EXIT -ne 0 ]; then
+
+    echo ""
+
+    echo "[ERROR] Docker build failed with exit code $BUILD_EXIT"
+
+    echo "[ERROR] Check the logs above for details."
+
+    echo "[ERROR] Common fixes:"
+
+    echo "  - A Go tool may have changed its import path"
+
+    echo "  - A Python package may have a broken release"
+
+    echo "  - Network timeout (just retry: rebuild the codespace)"
+
+    exit 1
+
+fi
+
+echo ""
+
+echo "[+] Image built successfully!"
+
+echo "[+] Image size: $(docker image inspect "$IMAGE_NAME" --format='{{.Size}}' | numfmt --to=iec 2>/dev/null || echo 'unknown')"

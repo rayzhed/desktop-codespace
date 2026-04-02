@@ -1,29 +1,85 @@
 #!/bin/bash
-# bootstrap.sh - Runs ONCE at codespace creation (postCreateCommand)
-# This is where we pull or build the heavy image so attach is instant
 
-set -e
+# bootstrap.sh - Runs ONCE at codespace creation (postCreateCommand)
 
 IMAGE_NAME="webtop-cyber"
+
 GHCR_IMAGE="${GHCR_IMAGE:-}"
 
-echo "=============================================="
-echo "     Cyber Desktop - Initial Setup"
+echo ""
+
 echo "=============================================="
 
-# Strategy 1: Try pulling prebuilt image from GHCR (fastest)
+echo "     Cyber Desktop - Building Image"
+
+echo "=============================================="
+
+echo ""
+
+# Strategy 1: Pull prebuilt image from GHCR
+
 if [ -n "$GHCR_IMAGE" ]; then
-    echo "[*] Pulling prebuilt image from GHCR..."
-    if docker pull "$GHCR_IMAGE" 2>/dev/null; then
+
+    echo "[*] Pulling prebuilt image: $GHCR_IMAGE"
+
+    if docker pull "$GHCR_IMAGE" 2>&1; then
+
         docker tag "$GHCR_IMAGE" "$IMAGE_NAME"
-        echo "[+] Prebuilt image ready! Attach will be instant."
+
+        echo "[+] Image pulled successfully. Startup will be fast."
+
         exit 0
+
     fi
-    echo "[!] GHCR pull failed, falling back to local build..."
+
+    echo "[!] Pull failed, building locally..."
+
+    echo ""
+
 fi
 
-# Strategy 2: Build locally (first time only, then cached)
-echo "[*] Building image locally (first time ~8min, cached after)..."
-docker build -t "$IMAGE_NAME" -f .devcontainer/webtop.Dockerfile .devcontainer/
+# Strategy 2: Build locally
 
-echo "[+] Image built and cached. Attach will be fast."
+echo "[*] Building image locally. This takes ~8-12 min on first run."
+
+echo "[*] Progress will appear below..."
+
+echo ""
+
+docker build \
+
+    --progress=plain \
+
+    -t "$IMAGE_NAME" \
+
+    -f .devcontainer/webtop.Dockerfile \
+
+    .devcontainer/ 2>&1
+
+BUILD_EXIT=$?
+
+if [ $BUILD_EXIT -ne 0 ]; then
+
+    echo ""
+
+    echo "[ERROR] Docker build failed with exit code $BUILD_EXIT"
+
+    echo "[ERROR] Check the logs above for details."
+
+    echo "[ERROR] Common fixes:"
+
+    echo "  - A Go tool may have changed its import path"
+
+    echo "  - A Python package may have a broken release"
+
+    echo "  - Network timeout (just retry: rebuild the codespace)"
+
+    exit 1
+
+fi
+
+echo ""
+
+echo "[+] Image built successfully!"
+
+echo "[+] Image size: $(docker image inspect "$IMAGE_NAME" --format='{{.Size}}' | numfmt --to=iec 2>/dev/null || echo 'unknown')"
